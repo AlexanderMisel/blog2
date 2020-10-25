@@ -1,0 +1,36 @@
+.bg-A {
+  background: url('../img/electric-3442835_1920.webp') center no-repeat;
+}
+.bg-B {
+  background: url('../img/milky-way-916523_1920.webp') center no-repeat;
+}
+.bg-C {
+  background: url('../img/lake-696098_1920.webp') center no-repeat;
+}
+
+@media screen and (max-width: 767px) {
+  .bg-A {
+    background: url('../img/electric-3442835_1280.webp') center no-repeat;
+    background-size: auto 100%;
+  }
+  .bg-B {
+    background: url('../img/milky-way-916523_1280.webp') center no-repeat;
+    background-size: auto 100%;
+  }
+  .bg-C {
+    background: url('../img/lake-696098_1280.webp') center no-repeat;
+    background-size: auto 100%;
+  }
+}
+
+.publish-date {
+  float: right;
+  font-size: 70%;
+  color: #999;
+}
+
+h4::after {
+  display: table;
+  content: ' ';
+  clear: both;
+}
