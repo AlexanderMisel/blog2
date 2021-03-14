@@ -22,7 +22,7 @@ source /path/to/xxx.sql
 mysql -uroot -p -f database < /path/to/xxx.sql
 ```
 
-这句没错。但是需要注意做些配置，才能让导入得快。我首先加入得配置是这些
+这句没错。但是需要注意做些配置，才能导入得快。我首先加入得配置是这些
 
 ```
 innodb_buffer_pool_size = 4G
