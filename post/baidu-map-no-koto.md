@@ -179,7 +179,7 @@ end
 
 ```lua
 local MCBAND = { 12890594.86, 8362377.87, 5591021, 3481989.83, 1678043.12, 0 }
-local MC2LL = { ... } -- 此处剩略
+local MC2LL = { ... } -- 此处省略
 
 local function convertor(T, hS)
   if not T or not hS then
