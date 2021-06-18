@@ -19,8 +19,7 @@ jobs:
       id: sitemap
       uses: cicirello/generate-sitemap@v1
       with:
-        base-url-path: https://alexandermisel.github.io/
-        path-to-root: blog
+        base-url-path: https://alexandermisel.github.io/blog/
 
     - name: Output stats
       run: |
