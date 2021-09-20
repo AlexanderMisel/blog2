@@ -1,5 +1,7 @@
 # LPeg.re是如何把PEG转换成LPeg对象的
 
+> 本文主要面向已经了解解析表达文法（PEG）和LPeg基本使用的读者
+
 我们知道LPeg是Lua的PEG库，但是它因为要与Lua结合，所以使用的时候跟标准的PEG有区别。但它提供了一个LPeg.re库，可以将我们用文字编写的PEG文法转换成LPeg内部的对象，就仿佛我们使用LPeg原生的写法编写了一个解析器一样，非常神奇。这神奇的操作就是在re.lua这个文件中实现的，它同样编写了一个parser，就是把我们的PEG转成内部形式。那我们来看看它是如何实现的吧。
 
 ```lua
@@ -15,7 +17,7 @@ pattern <- (S {:G: '' -> false :} exp) -> P
 
 S首先跳过所有空格或者注释，然后把G这个这个命名匹配置为false，再然后匹配我们的exp（表达式）。这些如果能够匹配上的话，就把匹配结果作为参数传给P。不过这还没完，如果匹配完之后，已经到字符串结尾了，那OK，匹配得没问题；否则就返回pattern错误。嗯，还算比较容易理解的。
 
-这里的patt_error函数接受两个参数，s（输入字符串）和i（当前位置）。这是function capture语法赋予它的。
+这里的`patt_error`函数接受两个参数，s（输入字符串）和i（当前位置）。这是function capture语法赋予它的。
 
 ## Exp
 
@@ -48,7 +50,7 @@ Suffix_1 <- (
 再看一个稍微复杂一些的，Cmt捕获。
 
 ```lua
-Suffix_1 <- ( 
+Suffix_2 <- ( 
               Primary S ("=>" * S * defwithfunc(m.Cmt) S)*
             )~> function (a,b,f) return f(a,b) end
 ```
