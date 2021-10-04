@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://alexandermisel.github.io/blog/</loc>
-<lastmod>2021-09-20T10:27:02+08:00</lastmod>
+<lastmod>2021-10-04T15:43:09+08:00</lastmod>
 </url>
 <url>
 <loc>https://alexandermisel.github.io/blog/links.html</loc>
@@ -27,6 +27,10 @@
 <url>
 <loc>https://alexandermisel.github.io/blog/post/build-wiki-bot-in-Lua.html</loc>
 <lastmod>2021-06-18T13:22:52+08:00</lastmod>
+</url>
+<url>
+<loc>https://alexandermisel.github.io/blog/post/chinese-variant-conversion-with-wikipedia-data.html</loc>
+<lastmod>2021-10-04T15:43:09+08:00</lastmod>
 </url>
 <url>
 <loc>https://alexandermisel.github.io/blog/post/chores-2.html</loc>
@@ -62,7 +66,7 @@
 </url>
 <url>
 <loc>https://alexandermisel.github.io/blog/post/how-lpeg.re-convert-peg-to-lpeg-objects.html</loc>
-<lastmod>2021-09-20T10:24:16+08:00</lastmod>
+<lastmod>2021-09-20T10:40:01+08:00</lastmod>
 </url>
 <url>
 <loc>https://alexandermisel.github.io/blog/post/js-geo-processing.html</loc>
