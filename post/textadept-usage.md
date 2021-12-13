@@ -13,7 +13,7 @@
 在Linux下我们可能也体会不到，那就是在Win下中文很可能会显示不出来。既然编码对了，那么为啥还是显示不出来呢？原因就在于Textadept给代码使用的字体是直接拿的GTK+的默认monospace字体，在Win下可能就是Courier New，但是这就出事了，这个字体没有汉字。那为什么其他编辑器显示得Courier New好好的呢？原因是他们查了系统的后备字体，但Textadept因为极简，当然不肯查了，所以我们要手动配。最简单的方式就是直接在`~/.textadept/init.lua`里面第一行配主题的时候顺便配上一个中英文通吃的字体，比如文泉驿等宽微米黑，如下：
 
 ```lua
-buffer:set_theme('light', {font = 'WenQuanYi Micro Hei Mono'})
+view:set_theme('light', {font = 'WenQuanYi Micro Hei Mono'})
 ```
 
 但是其实还有一个地方可能需要设置，那就是界面菜单的字体。Win下如果你看到的是宋体的菜单的话，那应该没有显示不出来的字符，不过很丑；如果你看到的是雅黑的话，你有一定可能会看到有些字符显示不出来，显示不出来的话，你可以按照我下面说的做。修改`share/themes/MS-Windows/gtk-2.0/gtkrc`文件，在最底下加这些
