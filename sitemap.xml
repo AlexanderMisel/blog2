@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://alexandermisel.github.io/blog/</loc>
-<lastmod>2021-12-11T22:02:40+08:00</lastmod>
+<lastmod>2022-06-11T11:51:52+08:00</lastmod>
 </url>
 <url>
 <loc>https://alexandermisel.github.io/blog/links.html</loc>
@@ -131,6 +131,10 @@
 <url>
 <loc>https://alexandermisel.github.io/blog/post/use-wiki-with-sni-mask.html</loc>
 <lastmod>2021-06-18T16:59:27+08:00</lastmod>
+</url>
+<url>
+<loc>https://alexandermisel.github.io/blog/post/using-svg-filters.html</loc>
+<lastmod>2022-06-11T11:51:52+08:00</lastmod>
 </url>
 <url>
 <loc>https://alexandermisel.github.io/blog/post/web-gis-starter.html</loc>
