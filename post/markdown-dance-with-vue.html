@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>Markdown与Vue的共舞</title>
+<meta name="keywords" content="Markdown,Vue,reactive,动态渲染,dynamic render" />
+<link href="../css/han.css" rel="stylesheet">
+</head>
+<body class='typora-export'><div class='typora-export-content'>
+<div id='write'  class=''><h1 id="Markdown与Vue的共舞" data-id="Markdown与Vue的共舞"><span>Markdown与Vue的共舞</span></h1><p><span>很久没有发博客了，但是这次因为觉得确实需要积累一下最近学到的知识，所以就有了这篇博客。标题很奇怪对不对？不过当你了解到我做的事情的时候，可能就没那么奇怪了。我最近做的这个工具是要在Markdown里面嵌入Vue的语法，并且实时预览的一个工具。</span></p><p><span>为什么要做这样一个工具？这还要源自我们经常面对的自动化生成报告这个需求。这样的报告通常需要一个模板，然后把我们从接口查出来的数据套入模板里，生成一个报告。在我们所用到的常用的可复用工具里，我发现缺少一个这样的东西。我曾经以为我们有，我以为他们说的“报表”是Word，但发现他们说的报表是Excel。市面上自动生成报表的工具太多了，自动生成Word的工具不够多。</span></p><p><span>我们以前用到的是docxtemplater这个库。当然我完全没有瞧不上它，甚至我觉得它做得挺好的，除了不方便调试和每次都需要修改代码以及需要增加新的模板docx文件外。但是随着我们频繁收到这类需求，我觉得需要更好的方式来处理这个问题。而对于从HTML转换到docx，我是有经验的。即便不从HTML转换而是从HTML复制到Word但要求保留字体格式，我也是写过相关代码的。所以我的思路依然从这个出发。但是这次我想选择一个不同的输入格式，Markdown格式。</span></p><p><span>Markdown格式我们再熟悉不过了，它比HTML简单不少，甚至对于格式不太多的Markdown文档来说，没接触过Markdown的人也不会觉得太过陌生。而且我很清楚在JS领域有非常快的支持实时预览的Markdown库。这样的优势叠加起来，让我想要尝试一下。进一步，我还想用Markdown来写模板，我发现了一个叫做marc的库，但是不太符合我的预期。它的模板能力还是有些弱了。而Vue本身的模板就很成熟。到了目前的Vue 3版本，在性能上也绝对是一流的。于是思路就这么定下了。</span></p><h2 id="成熟而又轻盈的Markdown编辑器" data-id="成熟而又轻盈的Markdown编辑器"><span>成熟而又轻盈的Markdown编辑器</span></h2><p><span>思路定下了，那么第一步就是Markdown编辑器了。我毫不犹豫地采用了Ace.js和Markdown-it。Ace.js算是我的老朋友了，既然是老朋友，当然是继续用它。除非有人告诉我已经有一个前端编辑器它快Ace很多，我可能才会考虑。</span></p><p><span>而渲染库方面，Markdown-it这个库我的确没用过，不过没用过不代表我没关注过它。我早就关注过它。最终选择它是因为它算是比较standard compliant，而且官网的示例有</span><strong><span>双向的滚动同步</span></strong><span>。这也说明了，如果想让别人用你的库，给出很好的代码示例是很必要的。</span></p><p><span>我做的工作其实就是让Markdown-it能够适配Ace Editor。毕竟官网的示例是用一个textarea，而我们知道textarea的API远没有一个成熟的编辑器要直接。比如在编辑器滚动的时候，想获取可视区域最上面一行的行号，只需要</span><code>editor.getFirstVisibleRow()</code><span>就可以实现。</span></p><p><span>有了这样好用的工具当然就如虎添翼了。这里我还是想提一下这个Markdown编辑器到底是如何实现的滚动同步。</span></p><pre><code class="js hljs"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">injectLineNumbers</span>(<span class="hljs-params">tokens, idx, options, env, slf</span>) </span>{
+    let line;
+    <span class="hljs-keyword">if</span> (tokens[idx].map <span class="hljs-operator">&amp;</span><span class="hljs-operator">&amp;</span> tokens[idx].level <span class="hljs-operator">=</span><span class="hljs-operator">=</span><span class="hljs-operator">=</span> <span class="hljs-number">0</span>) {
+	line <span class="hljs-operator">=</span> tokens[idx].map[<span class="hljs-number">0</span>];
+	tokens[idx].attrJoin(<span class="hljs-string">'class'</span>, <span class="hljs-string">'line'</span>);
+	tokens[idx].attrSet(<span class="hljs-string">'data-line'</span>, String(line));
+    }
+    <span class="hljs-keyword">return</span> slf.renderToken(tokens, idx, options, env, slf);
+}
+md.renderer.rules.paragraph_open <span class="hljs-operator">=</span> md.renderer.rules.heading_open <span class="hljs-operator">=</span> injectLineNumbers;
+</code></pre><p><span>我觉得上述代码是最主要的。它的作用hook进了Markdown的渲染器，让它在每个heading和paragraph的open tag都加上对应的源代码的行号。而且它这个库恰好就有这个函数让我去hook，这简直就太便利了。我在LuaWiki上就没有实现双向的滚动同步，我想一个重要的原因就是，我在parse的时候没有源代码的行号信息。</span></p><h2 id="动态渲染Vue模板的技术" data-id="动态渲染Vue模板的技术"><span>动态渲染Vue模板的技术</span></h2><p><span>我在构思之初，觉得这就是简单的Markdown套Vue嘛，应该不难。但是我在动态渲染Vue模板的时候碰壁了。因为我发现Vue本身竟然没有提供（或者说大多数人没有在）动态喂给它一个模板字符串，渲染成HTML。</span></p><p><span>同样，我首先找现成的实现。还真让我找到了</span><a href="https://github.com/mattelen/vue3-runtime-template" target="_blank" rel="noopener"><span>vue3-runtime-template</span></a><span>，我觉得它就是我想要的东西。它的实现很简单，就是把它父组件的data以及methods等都拿过来，然后自己写了一个render函数，把传进来的template渲染了。于是我的第一版有了。</span></p><p><span>虽然第一版可以算是勉强能用了，但是很快就发现问题了。那就是输入总是会有语法出错的时候，而这样写render函数的方法，是无法在错误的时候恢复的。这可能涉及很复杂的事情，涉及到Vue的DOM更新机制。它想要diff，想要替我们少更新几个节点，Virtual DOM，Tree-shaking云云。我们都不去管他，总之比较复杂，而出了错不是在render函数加个try-catch就能解决问题的。render函数就像是一个初始的处理，而真正会报错的在Vue真正调用完render函数之后，尝试真正的渲染的时候，这已经不是render函数能管的范围了。</span></p><p><span>倒不是说有经验的就不会出错，而是，由于我们要做的是实时预览，那就必然会有我们输入到一半的时候就需要渲染了。Markdown本身不容易出现这个问题，因为Markdown打到一半一般也是合法的。但是融入了Vue以后，事情变得不是这样了。Vue是建立在HTML以及模板mustache语法的，这两个都存在打到一半是不合法的情况，何况还有你本来要写的代码就不合法的情况。</span></p><p><span>对于这个问题我其实想到了两种解决办法，一种是仍然使用vue3-runtime-template这个库，但是在使用之前我要用一个sanitizer，把可能的问题处理掉，比如不完整的HTML tag是最常见的例子。但另一种更好的方法应该是，从源头处理掉这个问题，自己掌控Vue的编译进程，而非只是重写一个render函数这样子。</span></p><p><span>第一种方案是我最先尝试的。因为思路很明确，而且我知道大概怎么做。我确实用这个方案，让我的第一版能够容忍一定的错误了。但是我很快意识到想要像Vue本身的compiler那样检验模板是很难实现的。于是我很快投入到了对第二种方案的尝试中。但是我发现对于Vue的API如何运用的介绍很少。很少有一篇博客告诉你，你如何自己去编译一个Vue模板，而不用默认的方式的。</span></p><p><span>但是好在，我通过网上的少数片段，以及我看到vue.esm-browser.js导出的函数中发现了它的compile函数（内部叫compileToFunction），并且用法很简单，它直接的返回值直接就是一个render函数，这和我从网上获取到的例子调用的</span><code>@vue/compiler-dom</code><span>返回的值不一样，那个里面compile出来的值缺少runtimeDom里面的函数，不好使用。</span></p><pre><code class="js hljs"><span class="hljs-keyword">try</span> {
+  render <span class="hljs-operator">=</span> compile(html);
+  let newApp <span class="hljs-operator">=</span> createApp({
+    data() {
+      <span class="hljs-keyword">return</span> {
+        data: sharedData
+      }
+    },
+    render
+  });
+  
+  editorApp <span class="hljs-operator">&amp;</span><span class="hljs-operator">&amp;</span> editorApp.unmount();
+  afterUnmount <span class="hljs-operator">=</span> <span class="hljs-literal">true</span>
+  newApp.mount(result);
+  editorApp <span class="hljs-operator">=</span> newApp;
+} <span class="hljs-keyword">catch</span> (e) {
+  <span class="hljs-keyword">if</span> (<span class="hljs-operator">!</span>editorApp <span class="hljs-operator">|</span><span class="hljs-operator">|</span> afterUnmount) {
+    preview.innerHTML <span class="hljs-operator">=</span> `<span class="hljs-operator">&lt;</span>pre<span class="hljs-operator">&gt;</span>${e}<span class="hljs-operator">&lt;</span><span class="hljs-operator">/</span>pre<span class="hljs-operator">&gt;</span>`;
+  }
+  console.error(e);
+}
+</code></pre><p><span>使用第二种方案并且在createApp外面加try终于把问题处理掉了。有同学可能在想为什么我不用</span><code>app.config.errorHandler</code><span>这个API来处理错误呢？我觉得还是上面我提到的，我发现错误的语法带来的错误可能已经把这个app的更新机制给毁掉了，虽然这个app可能还在，但我想在它基础上恢复内容的难度应该没有我直接新建一个app，并且销毁掉老的，要直接。实际使用上，确实证明，这样做确实实现了我想要的效果，也没有明显的抖动。还是让人满意的。</span></p><h2 id="一点小技巧，如何在两个Vue-app之间共享数据" data-id="一点小技巧，如何在两个Vue-app之间共享数据"><span>一点小技巧，如何在两个Vue app之间共享数据</span></h2><p><span>答案就是Vue 3提供的一个API，叫做reactive。但是我就说，Vue的官方文档很坑的，明明它可以这么用，但是官方文档就是不告诉你。正如前面的compile函数，官方文档也是不提。Vue 3这套新的API叫做Composition API（中文文档里叫做“组合式”），它和原来的Options API（选项式）是Vue 3使用的两种形式。但是我们还是可以通过文档来了解一下它的。建议阅读</span><a href="https://cn.vuejs.org/guide/extras/reactivity-in-depth.html#how-reactivity-works-in-vue" target="_blank" rel="noopener"><span>深入响应式系统</span></a><span>这篇文档。</span></p><p><span>reactive用起来的感觉其实和Vue 2里面很相似，就是帮我们创建好了一个Proxy，你修改或者获取这个对象都是操作在这个Proxy上，然后再到本体。所以你改它就能够被外部知道了。你应该看到我怎么用了吧。</span></p><pre data-original-title="" title=""><code class="js hljs"><span class="hljs-keyword">import</span> { <span class="hljs-title">createApp</span>, <span class="hljs-title">reactive</span> } <span class="hljs-title"><span class="hljs-keyword">from</span></span> <span class="hljs-string">'vue'</span>;
+
+let sharedData <span class="hljs-operator">=</span> reactive({});
+
+createApp({
+  data() {
+    <span class="hljs-keyword">return</span> {
+      data: sharedData
+    }
+  }
+}).mount(<span class="hljs-string">'#app1'</span>);
+
+createApp({
+  data() {
+    <span class="hljs-keyword">return</span> {
+      data: sharedData
+    }
+  }
+}).mount(<span class="hljs-string">'#app2'</span>);
+</code></pre><p><span>这样我不管是在这两个app任意一个里操作sharedData，甚至在外面操作，再另一个app里都能够获取到它更新的事件，及时更新你的view。这个我觉得特别有用。因为我不是在同一个app获取数据，我的数据在另一个app，也就是专门用来选择和展示数据的app拿到。然后传给我们上面的markdown-vue模板预览的。至于为什么没有用单个app？实际上是因为我为了样式隔离，把markdown-vue那个app放在了Shadow DOM里面啦，而我想在Vue里面包含一个Shadow DOM，还是比较麻烦的，还不如用两个app实现。</span><a href="https://brynne8.github.io/blog/" target="_blank" rel="noopener"><span>∎</span></a></p></div>
+<script src="../dist/style_fix.js"></script>
+<script src="../dist/mini_pangu.js"></script>
+</body>
+</html>
